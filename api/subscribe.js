@@ -1,1 +1,52 @@
-export default async function handler(req,res){if(req.method!=="POST")return res.status(405).json({error:"Method not allowed"});try{const{email,name}=req.body||{};if(!email||!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email))return res.status(400).json({error:"Enter a valid email address."});const key=process.env.RESEND_API_KEY;if(!key)return res.status(500).json({error:"Newsletter service is not configured."});const segmentId=process.env.RESEND_SEGMENT_ID||"8adfaef3-819c-4187-a7ac-b103c14a2b96";const topicId=process.env.RESEND_TOPIC_ID||"c19db1d0-e8de-4a3a-80e0-b2cf3a66e970";const response=await fetch("https://api.resend.com/contacts",{method:"POST",headers:{"Authorization":"Bearer "+key,"Content-Type":"application/json"},body:JSON.stringify({email,firstName:name||undefined,unsubscribed:false,segmentIds:[segmentId],topics:[{id:topicId,subscription:"opt_in"}]})});const data=await response.json().catch(()=>({}));if(!response.ok)return res.status(response.status).json({error:data.message||"Unable to subscribe."});return res.status(200).json({ok:true})}catch(e){return res.status(500).json({error:"Unable to subscribe right now."})}}
+export default async function handler(req, res) {
+  if (req.method === "OPTIONS") {
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+    return res.status(204).end();
+  }
+
+  if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed." });
+
+  try {
+    const body = req.body || {};
+    const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
+    const firstName = typeof body.name === "string" ? body.name.trim().slice(0, 80) : "";
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 254) {
+      return res.status(400).json({ error: "Enter a valid email address." });
+    }
+
+    const apiKey = process.env.RESEND_API_KEY || "";
+    if (!apiKey) return res.status(503).json({ error: "Signup is being configured. Please try again shortly." });
+
+    const response = await fetch("https://api.resend.com/contacts", {
+      method: "POST",
+      headers: {
+        Authorization: "Bearer " + apiKey,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        email,
+        first_name: firstName || undefined,
+        unsubscribed: false,
+        segments: [{ id: "8adfaef3-819c-4187-a7ac-b103c14a2b96" }],
+        topics: [{ id: "c19db1d0-e8de-4a3a-80e0-b2cf3a66e970", subscription: "opt_in" }]
+      })
+    });
+
+    const data = await response.json().catch(() => ({}));
+    const message = String(data?.message || data?.error || "").toLowerCase();
+
+    if (!response.ok) {
+      if (response.status === 409 || message.includes("already exists")) {
+        return res.status(200).json({ ok: true, message: "Already subscribed." });
+      }
+      return res.status(502).json({ error: "Signup could not be completed. Please try again." });
+    }
+
+    return res.status(200).json({ ok: true });
+  } catch (error) {
+    return res.status(500).json({ error: "Signup could not be completed. Please try again." });
+  }
+}
