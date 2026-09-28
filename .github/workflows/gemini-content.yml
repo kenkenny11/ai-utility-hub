@@ -2,6 +2,7 @@ name: Gemini Content Refresh
 
 on:
   push:
+    branches: [main]
     paths-ignore:
       - "data/daily.json"
   workflow_dispatch:
@@ -27,6 +28,8 @@ jobs:
           mkdir -p data
           python - <<'PY'
           import json, os, urllib.request
+          from datetime import datetime, timezone
+
           prompt = """Create a compact daily content pack for AI Utility Hub.
 Return ONLY valid JSON with these keys:
 headline: short headline
@@ -51,11 +54,21 @@ Keep claims general and useful. No markdown."""
             method="POST"
           )
           with urllib.request.urlopen(req, timeout=60) as response:
-            data=json.load(response)
-          text=data["candidates"][0]["content"]["parts"][0]["text"]
-          parsed=json.loads(text)
-          with open("data/daily.json","w",encoding="utf-8") as f:
-            json.dump(parsed,f,ensure_ascii=False,indent=2)
+            data = json.load(response)
+
+          text = data["candidates"][0]["content"]["parts"][0]["text"]
+          parsed = json.loads(text)
+
+          if not isinstance(parsed.get("ideas"), list) or len(parsed["ideas"]) != 5:
+              raise ValueError("Gemini response must contain exactly 5 ideas")
+          if not isinstance(parsed.get("tips"), list) or len(parsed["tips"]) != 3:
+              raise ValueError("Gemini response must contain exactly 3 tips")
+
+          parsed["updated"] = datetime.now(timezone.utc).isoformat()
+
+          with open("data/daily.json", "w", encoding="utf-8") as f:
+              json.dump(parsed, f, ensure_ascii=False, indent=2)
+              f.write("\n")
           PY
 
       - name: Commit generated content
