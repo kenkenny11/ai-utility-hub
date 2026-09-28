@@ -26,6 +26,7 @@ jobs:
           python - <<'PY'
           import json
           import os
+          import time
           import urllib.request
           from datetime import datetime, timezone
 
@@ -37,28 +38,49 @@ jobs:
               "contents": [{"parts": [{"text": prompt}]}],
               "generationConfig": {
                   "responseMimeType": "application/json",
-                  "temperature": 0.7,
                   "maxOutputTokens": 1200
               }
           }
 
-          url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent"
-          request = urllib.request.Request(
-              url,
-              data=json.dumps(payload).encode("utf-8"),
-              headers={
-                  "x-goog-api-key": os.environ["GEMINI_API_KEY"],
-                  "Content-Type": "application/json"
-              },
-              method="POST"
-          )
+          def generate(model, attempts=5):
+              url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
+              last_error = None
 
+              for attempt in range(attempts):
+                  request = urllib.request.Request(
+                      url,
+                      data=json.dumps(payload).encode("utf-8"),
+                      headers={
+                          "x-goog-api-key": os.environ["GEMINI_API_KEY"],
+                          "Content-Type": "application/json"
+                      },
+                      method="POST"
+                  )
+
+                  try:
+                      with urllib.request.urlopen(request, timeout=90) as response:
+                          return json.load(response)
+                  except urllib.error.HTTPError as e:
+                      body = e.read().decode("utf-8", errors="replace")
+                      last_error = f"Gemini API HTTP {e.code}: {body}"
+
+                      if e.code not in (429, 500, 502, 503, 504) or attempt == attempts - 1:
+                          raise RuntimeError(last_error)
+
+                      delay = min(60, 5 * (2 ** attempt))
+                      print(f"{model} returned HTTP {e.code}; retrying in {delay}s...")
+                      time.sleep(delay)
+
+              raise RuntimeError(last_error or "Gemini request failed")
+
+          # Gemini 3.8 Flash is the primary model. If capacity is temporarily
+          # unavailable after retries, use the lower-latency Flash-Lite model.
           try:
-              with urllib.request.urlopen(request, timeout=90) as response:
-                  result = json.load(response)
-          except urllib.error.HTTPError as e:
-              body = e.read().decode("utf-8", errors="replace")
-              raise RuntimeError("Gemini API HTTP {}: {}".format(e.code, body))
+              result = generate("gemini-3.8-flash")
+          except RuntimeError as primary_error:
+              print("Primary model unavailable after retries.")
+              print(primary_error)
+              result = generate("gemini-3.5-flash-lite")
 
           parsed = json.loads(result["candidates"][0]["content"]["parts"][0]["text"])
 
