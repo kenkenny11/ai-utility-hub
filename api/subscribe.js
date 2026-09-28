@@ -1,11 +1,9 @@
 export default async function handler(req, res) {
-  if (req.method === "OPTIONS") {
-    res.setHeader("Access-Control-Allow-Origin", "*");
-    res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
-    res.setHeader("Access-Control-Allow-Headers", "Content-Type");
-    return res.status(204).end();
-  }
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
 
+  if (req.method === "OPTIONS") return res.status(204).end();
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed." });
 
   try {
@@ -18,7 +16,9 @@ export default async function handler(req, res) {
     }
 
     const apiKey = process.env.RESEND_API_KEY || "";
-    if (!apiKey) return res.status(503).json({ error: "Signup is being configured. Please try again shortly." });
+    if (!apiKey) {
+      return res.status(503).json({ error: "Signup is being configured. Please try again shortly." });
+    }
 
     const response = await fetch("https://api.resend.com/contacts", {
       method: "POST",
@@ -28,10 +28,15 @@ export default async function handler(req, res) {
       },
       body: JSON.stringify({
         email,
-        first_name: firstName || undefined,
+        firstName: firstName || undefined,
         unsubscribed: false,
-        segments: [{ id: "8adfaef3-819c-4187-a7ac-b103c14a2b96" }],
-        topics: [{ id: "c19db1d0-e8de-4a3a-80e0-b2cf3a66e970", subscription: "opt_in" }]
+        segmentIds: ["8adfaef3-819c-4187-a7ac-b103c14a2b96"],
+        topics: [
+          {
+            id: "c19db1d0-e8de-4a3a-80e0-b2cf3a66e970",
+            subscription: "opt_in"
+          }
+        ]
       })
     });
 
