@@ -25,32 +25,50 @@ jobs:
           python - <<'PY'
           import json, os, urllib.request
           from datetime import datetime, timezone
-          prompt = """Create a compact daily content pack for AI Utility Hub.
-Return ONLY valid JSON with headline, intro, exactly 5 ideas, and exactly 3 tips.
-No markdown. Keep claims general and useful."""
+
+          prompt = ("Create a compact daily content pack for AI Utility Hub. "
+                    "Return ONLY valid JSON with headline, intro, exactly 5 ideas, "
+                    "and exactly 3 tips. No markdown. Keep claims general and useful.")
+
           payload = {
               "contents": [{"parts": [{"text": prompt}]}],
-              "generationConfig": {"responseMimeType": "application/json", "temperature": 0.7, "maxOutputTokens": 1200}
+              "generationConfig": {
+                  "responseMimeType": "application/json",
+                  "temperature": 0.7,
+                  "maxOutputTokens": 1200
+              }
           }
+
           url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent"
-          request = urllib.request.Request(url, data=json.dumps(payload).encode(), headers={
-              "x-goog-api-key": os.environ["GEMINI_API_KEY"],
-              "Content-Type": "application/json"}, method="POST")
+          request = urllib.request.Request(
+              url,
+              data=json.dumps(payload).encode("utf-8"),
+              headers={
+                  "x-goog-api-key": os.environ["GEMINI_API_KEY"],
+                  "Content-Type": "application/json"
+              },
+              method="POST"
+          )
+
           try:
               with urllib.request.urlopen(request, timeout=90) as response:
                   result = json.load(response)
           except urllib.error.HTTPError as e:
               body = e.read().decode("utf-8", errors="replace")
-              raise RuntimeError(f"Gemini API HTTP {e.code}: {body}") from e
+              raise RuntimeError("Gemini API HTTP {}: {}".format(e.code, body))
+
           parsed = json.loads(result["candidates"][0]["content"]["parts"][0]["text"])
+
           if not isinstance(parsed.get("ideas"), list) or len(parsed["ideas"]) != 5:
               raise ValueError("Gemini response must contain exactly 5 ideas")
           if not isinstance(parsed.get("tips"), list) or len(parsed["tips"]) != 3:
               raise ValueError("Gemini response must contain exactly 3 tips")
+
           parsed["updated"] = datetime.now(timezone.utc).isoformat()
+
           with open("data/daily.json", "w", encoding="utf-8") as f:
               json.dump(parsed, f, ensure_ascii=False, indent=2)
-              f.write("\n")
+              f.write("\\n")
           PY
 
       - name: Commit generated content
