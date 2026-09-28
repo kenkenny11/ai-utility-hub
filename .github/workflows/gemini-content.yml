@@ -1,6 +1,9 @@
 name: Gemini Content Refresh
 
 on:
+  push:
+    paths-ignore:
+      - "data/daily.json"
   workflow_dispatch:
   schedule:
     - cron: "17 */12 * * *"
