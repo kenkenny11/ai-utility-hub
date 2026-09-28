@@ -22,8 +22,11 @@ jobs:
           set -euo pipefail
           test -n "$GEMINI_API_KEY"
           mkdir -p data
+
           python - <<'PY'
-          import json, os, urllib.request
+          import json
+          import os
+          import urllib.request
           from datetime import datetime, timezone
 
           prompt = ("Create a compact daily content pack for AI Utility Hub. "
@@ -39,7 +42,7 @@ jobs:
               }
           }
 
-          url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent"
+          url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent"
           request = urllib.request.Request(
               url,
               data=json.dumps(payload).encode("utf-8"),
@@ -68,7 +71,7 @@ jobs:
 
           with open("data/daily.json", "w", encoding="utf-8") as f:
               json.dump(parsed, f, ensure_ascii=False, indent=2)
-              f.write("\\n")
+              f.write("\n")
           PY
 
       - name: Commit generated content
