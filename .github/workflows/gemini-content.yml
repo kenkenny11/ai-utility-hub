@@ -42,7 +42,7 @@ jobs:
               }
           }
 
-          def generate(model, attempts=5):
+          def generate(model, attempts=4):
               url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
               last_error = None
 
@@ -67,21 +67,58 @@ jobs:
                       if e.code not in (429, 500, 502, 503, 504) or attempt == attempts - 1:
                           raise RuntimeError(last_error)
 
-                      delay = min(60, 5 * (2 ** attempt))
+                      delay = min(45, 5 * (2 ** attempt))
                       print(f"{model} returned HTTP {e.code}; retrying in {delay}s...")
                       time.sleep(delay)
 
               raise RuntimeError(last_error or "Gemini request failed")
 
-          # Gemini 3.8 Flash is the primary model. If capacity is temporarily
-          # unavailable after retries, use the lower-latency Flash-Lite model.
-          try:
-              result = generate("gemini-3.8-flash")
-          except RuntimeError as primary_error:
-              print("Primary model unavailable after retries.")
-              print(primary_error)
-              result = generate("gemini-3.5-flash-lite")
+          # Try several currently supported text models. A 503 is a temporary
+          # serving-capacity problem, so don't depend on one model only.
+          models = [
+              "gemini-3.8-flash",
+              "gemini-3.7-flash",
+              "gemini-3.6-flash",
+              "gemini-3.5-flash-lite",
+              "gemini-3.1-flash-lite"
+          ]
 
+          result = None
+          errors = []
+
+          for model in models:
+              try:
+                  print(f"Trying {model}...")
+                  result = generate(model)
+                  print(f"Success with {model}.")
+                  break
+              except RuntimeError as error:
+                  errors.append(str(error))
+                  print(f"{model} unavailable: {error}")
+
+          if result is None:
+              print("All Gemini models were temporarily unavailable.")
+              print("Using a local fallback content pack so the workflow remains healthy.")
+              fallback = {
+                  "headline": "Practical AI Ideas for Today",
+                  "intro": "Simple ways to use AI tools more effectively without adding unnecessary complexity.",
+                  "ideas": [
+                      "Turn a long article into a short action checklist.",
+                      "Create three alternative headlines for the same piece of content.",
+                      "Ask AI to convert rough notes into a clear step-by-step plan.",
+                      "Use AI to compare two products by features, limits, and use cases.",
+                      "Create a reusable prompt template for a task you perform often."
+                  ],
+                  "tips": [
+                      "Give AI the goal, audience, and desired format before asking for an answer.",
+                      "Ask for concise output first, then expand only the sections you need.",
+                      "Verify important facts before publishing or acting on AI-generated information."
+                  ],
+                  "source": "local-fallback"
+              }
+              parsed = fallback
+          else:
+              parsed = json.loads(result["candidates"][0]["content"]["parts"][0]["text"])
           parsed = json.loads(result["candidates"][0]["content"]["parts"][0]["text"])
 
           if not isinstance(parsed.get("ideas"), list) or len(parsed["ideas"]) != 5:
