@@ -17,7 +17,7 @@ export default async function handler(req, res) {
 
     const apiKey = process.env.RESEND_API_KEY || "";
     if (!apiKey) {
-      return res.status(503).json({ error: "Signup is being configured. Please try again shortly." });
+      return res.status(503).json({ error: "Signup service is not configured.", code: "RESEND_KEY_MISSING" });
     }
 
     const response = await fetch("https://api.resend.com/contacts", {
@@ -40,11 +40,17 @@ export default async function handler(req, res) {
       if (response.status === 409 || message.includes("already exists")) {
         return res.status(200).json({ ok: true, message: "Already subscribed." });
       }
-      return res.status(502).json({ error: "Signup could not be completed. Please try again." });
+      return res.status(502).json({
+        error: "Signup service rejected the request.",
+        code: "RESEND_" + response.status
+      });
     }
 
     return res.status(200).json({ ok: true });
   } catch (error) {
-    return res.status(500).json({ error: "Signup could not be completed. Please try again." });
+    return res.status(500).json({
+      error: "Signup request failed.",
+      code: "SERVER_ERROR"
+    });
   }
 }
