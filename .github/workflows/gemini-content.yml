@@ -1,10 +1,6 @@
 name: Gemini Content Refresh
 
 on:
-  push:
-    branches: [main]
-    paths-ignore:
-      - "data/daily.json"
   workflow_dispatch:
   schedule:
     - cron: "17 */12 * * *"
@@ -29,43 +25,29 @@ jobs:
           python - <<'PY'
           import json, os, urllib.request
           from datetime import datetime, timezone
-
           prompt = """Create a compact daily content pack for AI Utility Hub.
-Return ONLY valid JSON with these keys:
-headline: short headline
-intro: 1-2 sentence introduction
-ideas: array of exactly 5 practical AI utility ideas
-tips: array of exactly 3 short tips
-Keep claims general and useful. No markdown."""
+Return ONLY valid JSON with headline, intro, exactly 5 ideas, and exactly 3 tips.
+No markdown. Keep claims general and useful."""
           payload = {
-            "contents": [{"parts": [{"text": prompt}]}],
-            "generationConfig": {
-              "responseMimeType": "application/json",
-              "maxOutputTokens": 1200
-            }
+              "contents": [{"parts": [{"text": prompt}]}],
+              "generationConfig": {"responseMimeType": "application/json", "temperature": 0.7, "maxOutputTokens": 1200}
           }
-          req = urllib.request.Request(
-            "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent",
-            data=json.dumps(payload).encode(),
-            headers={
+          url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent"
+          request = urllib.request.Request(url, data=json.dumps(payload).encode(), headers={
               "x-goog-api-key": os.environ["GEMINI_API_KEY"],
-              "Content-Type": "application/json"
-            },
-            method="POST"
-          )
-          with urllib.request.urlopen(req, timeout=60) as response:
-            data = json.load(response)
-
-          text = data["candidates"][0]["content"]["parts"][0]["text"]
-          parsed = json.loads(text)
-
+              "Content-Type": "application/json"}, method="POST")
+          try:
+              with urllib.request.urlopen(request, timeout=90) as response:
+                  result = json.load(response)
+          except urllib.error.HTTPError as e:
+              body = e.read().decode("utf-8", errors="replace")
+              raise RuntimeError(f"Gemini API HTTP {e.code}: {body}") from e
+          parsed = json.loads(result["candidates"][0]["content"]["parts"][0]["text"])
           if not isinstance(parsed.get("ideas"), list) or len(parsed["ideas"]) != 5:
               raise ValueError("Gemini response must contain exactly 5 ideas")
           if not isinstance(parsed.get("tips"), list) or len(parsed["tips"]) != 3:
               raise ValueError("Gemini response must contain exactly 3 tips")
-
           parsed["updated"] = datetime.now(timezone.utc).isoformat()
-
           with open("data/daily.json", "w", encoding="utf-8") as f:
               json.dump(parsed, f, ensure_ascii=False, indent=2)
               f.write("\n")
