@@ -28,15 +28,8 @@ export default async function handler(req, res) {
       },
       body: JSON.stringify({
         email,
-        firstName: firstName || undefined,
-        unsubscribed: false,
-        segmentIds: ["8adfaef3-819c-4187-a7ac-b103c14a2b96"],
-        topics: [
-          {
-            id: "c19db1d0-e8de-4a3a-80e0-b2cf3a66e970",
-            subscription: "opt_in"
-          }
-        ]
+        first_name: firstName || undefined,
+        unsubscribed: false
       })
     });
 
