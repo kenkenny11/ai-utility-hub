@@ -1,17 +1,17 @@
 {
-  "headline": "Daily AI Boost: Streamline Your Daily Workflow",
-  "intro": "Explore actionable ways to integrate AI utilities into your routine to boost productivity and reduce routine manual effort.",
+  "headline": "Daily AI Utility Pack: Practical Tools and Workflows to Supercharge Productivity",
+  "intro": "Explore simple, actionable artificial intelligence concepts designed to optimize your daily workflow and automate repetitive tasks efficiently.",
   "ideas": [
-    "Automate meeting summaries and action items using AI transcription tools.",
-    "Draft initial email responses using context-aware text generators.",
-    "Debug and optimize routine code snippets with assistant tools.",
-    "Convert unstructured research notes into clear slide presentation outlines.",
-    "Categorize and tag digital bookmarks automatically using semantic search."
+    "Draft personalized email responses using few-shot prompt templates to save daily triage time.",
+    "Convert raw meeting transcripts into structured bullet-point summaries with clear action owners.",
+    "Extract and organize key entities from long PDF manuals into clean spreadsheets.",
+    "Generate modular boilerplate code and regex patterns from plain-text problem descriptions.",
+    "Refine internal documentation by automatically adapting technical language for non-technical stakeholders."
   ],
   "tips": [
-    "Always review AI outputs for accuracy and context before sharing.",
-    "Provide clear, specific prompts that explicitly state your intended goal.",
-    "Focus on automating one repetitive, low-risk task at a time."
+    "Provide one or two concrete examples in your prompt to strictly constrain the model's output format.",
+    "Deconstruct complex operational tasks into a chained sequence of simpler, targeted prompts.",
+    "Always double-check factual claims, dates, and quantitative data against trusted source documents."
   ],
-  "updated": "2026-10-08T18:53:35.482130+00:00"
+  "updated": "2026-10-09T06:07:21.660824+00:00"
 }
