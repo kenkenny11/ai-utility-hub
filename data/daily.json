@@ -1,17 +1,17 @@
 {
-  "headline": "Daily AI Utility Pack: Practical Tools and Workflows to Supercharge Productivity",
-  "intro": "Explore simple, actionable artificial intelligence concepts designed to optimize your daily workflow and automate repetitive tasks efficiently.",
+  "headline": "Supercharge Your Daily Workflow with AI Utilities",
+  "intro": "Discover simple yet powerful ways to integrate everyday AI tools into your daily routine to save time, spark creativity, and streamline administrative tasks.",
   "ideas": [
-    "Draft personalized email responses using few-shot prompt templates to save daily triage time.",
-    "Convert raw meeting transcripts into structured bullet-point summaries with clear action owners.",
-    "Extract and organize key entities from long PDF manuals into clean spreadsheets.",
-    "Generate modular boilerplate code and regex patterns from plain-text problem descriptions.",
-    "Refine internal documentation by automatically adapting technical language for non-technical stakeholders."
+    "Automate inbox triage by using AI to summarize lengthy email threads and suggest context-aware draft replies.",
+    "Convert raw meeting recordings and voice notes into prioritized action items and executive summaries.",
+    "Repurpose long-form reports or articles into bite-sized social media updates and newsletter highlights.",
+    "Accelerate spreadsheet work by using conversational prompts to generate complex formulas and debug syntax errors.",
+    "Synthesize research faster by comparing key takeaways across multiple PDFs and research papers in one view."
   ],
   "tips": [
-    "Provide one or two concrete examples in your prompt to strictly constrain the model's output format.",
-    "Deconstruct complex operational tasks into a chained sequence of simpler, targeted prompts.",
-    "Always double-check factual claims, dates, and quantitative data against trusted source documents."
+    "Provide clear context upfront, including your target audience, tone of voice, and preferred output length.",
+    "Refine through iteration by asking follow-up questions rather than restarting the conversation with a new prompt.",
+    "Always review critical outputs manually, treating generated drafts as collaborative starting points rather than final facts."
   ],
-  "updated": "2026-10-09T06:07:21.660824+00:00"
+  "updated": "2026-10-09T18:21:22.196004+00:00"
 }
