@@ -1,17 +1,18 @@
 {
-  "headline": "Maximizing Daily Productivity with AI Utility Hub",
-  "intro": "Discover practical ways to integrate AI utilities into your daily workflow to automate routine tasks, enhance decision-making, and boost overall efficiency.",
+  "hub_name": "AI Utility Hub",
+  "headline": "Maximize Your Daily Productivity with AI Tools",
+  "intro": "Welcome to your daily dose of practical artificial intelligence applications designed to save you time and streamline your workflow.",
   "ideas": [
-    "Automate repetitive data entry by transforming unstructured text into clean formats.",
-    "Use AI-driven summarization to quickly extract key points from long reports and transcripts.",
-    "Generate personalized communication templates for outreach and client support.",
-    "Draft preliminary project outlines and feature ideas using iterative prompting.",
-    "Build standardized task checklists to maintain consistency across technical and creative workflows."
+    "Automate your daily email summaries using custom prompt templates.",
+    "Generate structured meeting agendas and action items instantly.",
+    "Use AI to proofread and rewrite complex reports for better clarity.",
+    "Convert raw data tables into easy-to-read summary charts.",
+    "Brainstorm content outlines and social media calendars in seconds."
   ],
   "tips": [
-    "Provide explicit context and constraints in your prompts to receive more accurate outputs.",
-    "Treat AI-generated responses as initial drafts that require human review and refinement.",
-    "Save and organize high-performing prompts into a reusable personal library."
+    "Be specific with your prompts to get more accurate and relevant results.",
+    "Always review AI-generated content for accuracy before final publication.",
+    "Save your most successful prompt structures as reusable templates."
   ],
-  "updated": "2026-10-13T19:16:32.613721+00:00"
+  "updated": "2026-10-14T17:11:20.852778+00:00"
 }
